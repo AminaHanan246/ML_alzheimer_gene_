@@ -15,15 +15,10 @@ The goal of this project is to identify potential biomarkers from gene expressio
 ---
 
 ## Folder Structure
-
 ```
 ML_alzheimer_gene_/
-
 ├── scripts/            # Analysis scripts (Python)
-
 ├── results/            # Evaluation performance data
-
 ├── plots/              # Distribution plots, PCA plots, confusion matrix
-
 └── README.md           # Project documentation
 ```
