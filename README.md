@@ -10,14 +10,13 @@ This repository contains a complete machine learning workflow for biomarker disc
 
 The goal of this project is to identify potential biomarkers from gene expression data. The workflow includes:
 
-![](ML workflow.gif)
+![](ML_workflow.gif)
 
 ---
 
 ## Folder Structure
 
 ```
-
 ML_alzheimer_gene_/
 
 ├── scripts/            # Analysis scripts (Python)
@@ -27,6 +26,4 @@ ML_alzheimer_gene_/
 ├── plots/              # Distribution plots, PCA plots, confusion matrix
 
 └── README.md           # Project documentation
-
-
-
+```
