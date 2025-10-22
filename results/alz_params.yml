@@ -3,3 +3,18 @@ logistic regression:
   max_iter: 1000
   penalty: l1
   solver: liblinear
+random forest:
+  bootstrap: true
+  max_depth: 10
+  max_features: null
+  min_samples_leaf: 4
+  min_samples_split: 5
+  n_estimators: 200
+xgboost:
+  colsample_bytree: 1.0
+  gamma: 0.1
+  learning_rate: 0.3
+  max_depth: 10
+  min_child_weight: 5
+  n_estimators: 300
+  subsample: 1.0

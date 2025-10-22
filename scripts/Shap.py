@@ -11,10 +11,9 @@ def shap_plot(model,X_train,X_test):
     explainer = shap.Explainer(model, X_train)
     shap_values = explainer(X_test)
     print(f"\nSHAP Summary Plot ({model}):")
-    shap.summary_plot(shap_values, X_test, feature_names=X.columns)
-    plt.tight_layout()
-    plt.savefig(f"plots/shap_summmary_{model}.png")
-    plt.show()
+    shap.summary_plot(shap_values, X_test, feature_names=X.columns, show=False)
+    plt.savefig(f"plots/shap_summmary.png")
+    plt.close()
 
 # Top features for model prediction
 def plot_top_features(model, feature_names, title, top_n):
@@ -38,7 +37,7 @@ def plot_top_features(model, feature_names, title, top_n):
     plt.xlabel(x_labels)
     plt.ylabel("Feature")
     plt.tight_layout()
-    plt.savefig(f"plots/top_features_{model}.png")
+    plt.savefig(f"plots/top_features.png")
     plt.show()
 
 if __name__ == '__main__':
