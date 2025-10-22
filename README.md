@@ -36,21 +36,23 @@ A dimensionality reduction was performed in order to check its affect on model p
 The PCA caused a drop in model accuracy, and therefore confirmed that the original features had better discriminative power. Thus, final analyses used raw data.
 
 ## Model Training
-Among all the models performance, three models which performed - worst, mid and best was chosen. These model were *Logistic Regression*, *Random Forest Classifier*, and *XGBoost Classifier*. Each model was trained with both PCA and non-PCA data, hyperparameter tuning performed via `RandomizedSearchCV` using training set and cross-validated using `10-fold Stratified cross-validation` using the entire dataset 
+Among all the models performance, three models which performed - worst, mid and best was chosen. These model were **Logistic Regression**, **Random Forest Classifier**, and **XGBoost Classifier**. Each model was trained with both PCA and non-PCA data, hyperparameter tuning performed via `RandomizedSearchCV` using training set and cross-validated using `10-fold Stratified cross-validation` using the entire dataset 
 
 ## Model Evaluation
-Metric such as *Accuracy*, *Precision*, *Recall*, *F1-score* and *ROC-AUC* was evaluated for each model, with *Accuracy* given priority after hyperparameter tuning and cross-validation. There was 5-6% reduction in accuracy during cross-validation, which was expected and also indicates that the model didn't overfit the training data. 
+Metric such as **Accuracy**, **Precision**, **Recall**, **F1-score** and **ROC-AUC** was evaluated for each model, with *Accuracy* given priority after hyperparameter tuning and cross-validation. There was 5-6% reduction in accuracy during cross-validation, which was expected and also indicates that the model didn't overfit the training data. 
 From these evaluation, the model with best performance was:
 > XGBoost, Accuracy = 94.43 ± 3.86%, ROC–AUC = 0.995 ± 0.0254
 
 ## Feature Attribution
-Key genes involved in predictive power of samples were identified using SHAP (SHapley Additive exPlanations). The top contributing genes were *APP*, *APOE* and *PSEN1* which are AD biomarkers involved in amyloid pre-processing and lipid metabolism.
+Key genes involved in predictive power of samples were identified using **SHAP** (SHapley Additive exPlanations). The top contributing genes were *APP*, *APOE* and *PSEN1* which are AD biomarkers involved in amyloid pre-processing and lipid metabolism.
 
 ## Conclusion
 The project concludes XGBoost as the most robust classifier for this dataset. While PCA helps in reducing the number of features involved, much of the information with important discriminative power is lost.
 Key genes as potential biomarker's for Alzheimer's Disease was also identified. Thus, demonstrates that machine learning techniques can be used reveal biological insights.
+
 ---
-# Tools and Libraries
+
+## Tools and Libraries
 * Python 3.10+
 * scikit-learn
 * XGBoost
