@@ -6,18 +6,21 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.model_selection import train_test_split, cross_val_predict
 
-from scripts.utilis import load_csv, model_tuning_CV, basic_eda, plot_class_dist
+from scripts.utilis import load_config,load_csv, model_tuning_CV, basic_eda, plot_class_dist
 #-----------------------------------------------
 #Defining Functions
 #-----------------------------------------------
 
 if __name__=='__main__':
-    # Load data
-    path = r"D:\BI_prj\ML_biomarker\alzheimers_gene"
-    os.chdir(path.replace("\\","/"))
-    os.makedirs('plots', exist_ok=True)
-    os.makedirs('results', exist_ok=True)
-    alz_gene = load_csv("alzheimer_disease_vs_control.csv")
+    #Load configuration
+    cfg = load_config("config.yml")
+
+    # Create directories
+    os.makedirs(cfg["paths"]["plots"], exist_ok=True)
+    os.makedirs(cfg["paths"]["results"], exist_ok=True)
+
+    #Load data
+    alz_gene = load_csv(cfg["paths"]["data"])
 
     # Data Overview
     summary = basic_eda(alz_gene)
@@ -62,11 +65,10 @@ if __name__=='__main__':
     #List of metrics to be measured
     metrics = ['accuracy','precision','recall','f1','roc_auc']
 
-    tuning_results = []
-    skf_results = []
+    tuning_results, skf_results = [], []
 
-    for run_ml in run_model:
-        tuning_results, skf_results,best_model = model_tuning_CV("",X,y,X_train,y_train,X_test,y_test,run_ml,metrics, tuning_results,skf_results)
+    for run_ml in cfg["models"]:
+        tuning_results, skf_results,best_model = model_tuning_CV("",X,y,X_train,y_train,X_test,y_test,run_ml,cfg["metrics"], tuning_results,skf_results)
 
     #Saving all results to CSV
     tuning_csv = pd.DataFrame(tuning_results)

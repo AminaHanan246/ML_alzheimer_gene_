@@ -1,0 +1,20 @@
+paths:
+  data: "./data/alzheimer_disease_vs_control.csv"
+  plots: "./plots"
+  results: "./results"
+
+train:
+  test_size: 0.2
+  random_state: 42
+
+models:
+  - logistic regression
+  - random forest
+  - xgboost
+
+metrics:
+  - accuracy
+  - precision
+  - recall
+  - f1
+  - roc_auc

@@ -3,11 +3,12 @@ import joblib
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, cross_val_predict
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, f1_score, recall_score, classification_report,roc_curve,roc_auc_score
-
+from scripts.utilis import load_config
 if __name__=='__main__':
     '''
     Using the cross validated model, Roc-Auc curve is predicted for 3 models - worst, mid, best
     '''
+    cfg = load_config("config.yml")
 
     data = joblib.load('data_clean.pkl')
     X = data['X']
@@ -17,12 +18,11 @@ if __name__=='__main__':
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
     #List of models to be run - worst, mid, best
-    run_model = ['random forest','logistic regression','xgboost']
 
     plt.figure(figsize=(8, 6))
 
     #ROC plotting
-    for run_ml in run_model:
+    for run_ml in cfg['models']:
         #Load stored model
         model_path = f'{run_ml}_CV_model.pkl'
         if not os.path.exists(model_path):

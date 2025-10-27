@@ -1,5 +1,6 @@
 import os
 import joblib
+import yaml
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,6 +17,17 @@ from sklearn.model_selection import StratifiedKFold, cross_val_score
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, f1_score, recall_score, classification_report,roc_curve,roc_auc_score
 from scipy.stats import randint, uniform, zscore
 import shap
+
+def load_config(config_path="config.yml"):
+    """Safely load YAML configuration."""
+    try:
+        with open(config_path, "r") as file:
+            cfg = yaml.safe_load(file)
+        return cfg
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Config file not found at {config_path}")
+    except yaml.YAMLError as e:
+        raise ValueError(f"Error parsing YAML file: {e}")
 
 #Load CSV
 def load_csv(filepath):

@@ -8,10 +8,7 @@ from sklearn.model_selection import train_test_split, cross_val_predict
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
-from scripts.utilis import load_csv
-from utilis import (
-model_tuning_CV
-)
+from scripts.utilis import load_config,model_tuning_CV
 
 if __name__ == "__main__":
 
@@ -19,26 +16,12 @@ if __name__ == "__main__":
     PCA vs Non-PCA
     Dimensionality reduction performed to check if it would produce models with better results.
     '''
-    # Load data
-    path = r"D:\BI_prj\ML_biomarker\alzheimers_gene"
-    os.chdir(path.replace("\\", "/"))
-    os.makedirs('plots', exist_ok=True)
-    os.makedirs('results', exist_ok=True)
-    alz_gene = load_csv("alzheimer_disease_vs_control.csv")
-    data = alz_gene
+    cfg = load_config("config.yml")
 
+    data = joblib.load('data_clean.pkl')
+    X = data['X']
+    y = data['y']
 
-    # EDA
-    alz_gene.drop('batch', axis=1, inplace=True)
-    print(alz_gene['label'].unique())
-
-    print("\nDataset distribution:", alz_gene['label'].value_counts())
-
-    # Model Training
-    alz_gene['label'] = alz_gene['label'].map({'condition': 1, 'control': 0})
-
-    X = alz_gene.drop('label', axis=1)
-    y = alz_gene['label']
     #======================================
     #With PCA
     #======================================
@@ -84,17 +67,10 @@ if __name__ == "__main__":
 
     X_train, X_test, y_train, y_test = train_test_split(X_pca, y, test_size=0.2, random_state=42)
 
-    #List of models to run
-    run_model = ['logistic regression','random forest','xgboost']
-    # List of metrics to be measured
-    metrics = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc']
+    tuning_results,skf_results = [],[]
 
-    skf_results = []
-    tuning_results = []
-
-    for run_ml in run_model:
-        tuning_results, skf_results, best_model = model_tuning_CV("", X, y, X_train, y_train, X_test, y_test, run_ml,metrics, tuning_results, skf_results)
-
+    for run_ml in cfg["models"]:
+        tuning_results, skf_results,best_model = model_tuning_CV("with_pca",X,y,X_train,y_train,X_test,y_test,run_ml,cfg["metrics"], tuning_results,skf_results)
     #Save to CSV
     pca_csv = pd.DataFrame(skf_results)
     pca_csv.to_csv("results/pca_results.csv",index=False)
