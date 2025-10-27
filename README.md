@@ -18,6 +18,7 @@ ML_alzheimer_gene_/
 ├── scripts/            # Analysis scripts (Python)
 ├── results/            # Evaluation performance data
 ├── plots/              # Distribution plots, PCA plots, confusion matrix
+├── config.yml          # configuration file
 └── README.md           # Project documentation
 ```
 ---
