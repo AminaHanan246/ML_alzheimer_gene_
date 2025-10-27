@@ -7,10 +7,10 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split, cross_val_predict
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+from scripts.utilis import load_csv
 from utilis import (
-ml_model,
-save_param,
-strat_k_fold
+model_tuning_CV
 )
 
 if __name__ == "__main__":
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     os.chdir(path.replace("\\", "/"))
     os.makedirs('plots', exist_ok=True)
     os.makedirs('results', exist_ok=True)
-    alz_gene = pd.read_csv("alzheimer_disease_vs_control.csv")
+    alz_gene = load_csv("alzheimer_disease_vs_control.csv")
     data = alz_gene
 
 
@@ -89,32 +89,14 @@ if __name__ == "__main__":
     # List of metrics to be measured
     metrics = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc']
 
-    pca_results = []
+    skf_results = []
+    tuning_results = []
 
     for run_ml in run_model:
-        result = {'Model': run_ml}
-        tuning_scores, best_model, best_params, best_score, fpr, tpr = ml_model(X_train, y_train, X_test, y_test,
-                                                                                run_ml, tuning=True)
-        joblib.dump(best_model, f"{run_ml} PCA_tuned_model.pkl")
-        print(f"\nBest Hyperparameters from RandomizedSearchCV {run_ml.capitalize()}:")
-        print(best_params)
-        save_param(run_ml, best_params, "results/alz_pca_params.yml")
-
-        # 10-fold Cross validation
-        skf_scores = strat_k_fold(X_pca, y, best_model)
-        print(f"\n10-Fold Stratified Cross Validation Results {run_ml} with PCA:")
-        # CV evaluation
-        for metric in metrics:
-            print(f"\n {metric.capitalize()} Score       : {skf_scores[metric][0]:.4f} ± {skf_scores[metric][1]:.4f}")
-            result[metric] = skf_scores[metric][0]
-            result[f'{metric}_std'] = skf_scores[metric][1]
-
-        joblib.dump(best_model, f"{run_ml}_CV_model.pkl")
-        # Storing skf scores
-        pca_results.append(result)
+        tuning_results, skf_results, best_model = model_tuning_CV("", X, y, X_train, y_train, X_test, y_test, run_ml,metrics, tuning_results, skf_results)
 
     #Save to CSV
-    pca_csv = pd.DataFrame(pca_results)
+    pca_csv = pd.DataFrame(skf_results)
     pca_csv.to_csv("results/pca_results.csv",index=False)
 
 

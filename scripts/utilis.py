@@ -17,6 +17,21 @@ from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, f
 from scipy.stats import randint, uniform, zscore
 import shap
 
+#Load CSV
+def load_csv(filepath):
+    try:
+        df = pd.read_csv(filepath)
+        print(df.head())  # Display the first few rows
+    except FileNotFoundError:
+        print("Error: The specified CSV file was not found.")
+    except pd.errors.EmptyDataError:
+        print("Error: The CSV file is empty.")
+    except pd.errors.ParserError:
+        print("Error: There was an issue parsing the CSV file. Check for malformed lines or incorrect delimiters.")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+    return df
+
 #Basic EDA
 def basic_eda(data):
     summary = {
@@ -28,6 +43,19 @@ def basic_eda(data):
         "missing_values": data.isnull().sum()
     }
     return summary
+
+#class distubution
+def plot_class_dist(data,x,hue):
+    # Check class imbalance
+    plt.figure(figsize=(5, 5))
+    sns.countplot(x=x, data=data, edgecolor='black', hue=hue)
+    plt.xlabel(f"{x.capitalize()}")
+    plt.ylabel("Frequency")
+    plt.title('Class Distribution')
+    plt.tight_layout()
+    plt.savefig("plots/Label freq.png")
+    plt.show()
+    print("\nDataset distribution:", data[x].value_counts())
 
 #Outlier removal
 def outlier_remove(method, data):
@@ -76,6 +104,7 @@ def strat_k_fold(X, y, model, n_splits=10, shuffle= True, random_state=42):
     for metric in metrics:
         score = cross_val_score(model, X, y, cv=skf, scoring=metric)
         skf_scores[metric] = [score.mean(), score.std()]
+
     return skf_scores
 
 # Hyperparameter tuning
@@ -168,6 +197,43 @@ def hyper_tuning(X,y,input_model,model,method = 'random search'):
 
     return best_model, best_params, best_score
 
+#Evaluation metrics
+def report_metric(scores, metrics, result):
+    for metric in metrics:
+        if metric in scores:
+            value = scores[metric]
+            # Handle CV metrics (mean ± std) stored as list/tuple
+            if isinstance(value, (list, tuple)) and len(value) == 2:
+                print(f"\n {metric.capitalize()} Score       : {value[0]:.4f} ± {value[1]:.4f}")
+                result[metric] = value[0]
+                result[f"{metric}_std"] = value[1]
+            else:
+                print(f"\n {metric.capitalize()} Score       : {value:.4f}")
+                result[metric] = value
+
+    if 'confusion' in scores:
+        print(f"Confusion Matrix     :\n{scores['confusion']}")
+
+    if 'auc score' in scores:
+        print(f"AUC Score            : {scores['auc score']:.4f}")
+
+    return result
+
+#YAML file for parameter
+def save_param(model, params, path_file):
+    import yaml
+    # If file exists
+    if os.path.exists(path_file):
+        with open(path_file, 'r') as f:
+            all_params = yaml.load(f, Loader=yaml.FullLoader)
+    else:
+        all_params = {}
+    #update with new params
+    all_params[model] = params
+    #save it to file
+    with open(path_file, 'w') as f:
+        yaml.dump(all_params, f)
+
 # Model training
 def ml_model(X_train,y_train, X_test, y_test,  input_model, tuning = False, scale = 'MinMax'):
     ml_chain = {
@@ -201,7 +267,6 @@ def ml_model(X_train,y_train, X_test, y_test,  input_model, tuning = False, scal
         y_pred_best = best_model.predict(X_test)
         y_proba = best_model.predict_proba(X_test)[:, 1]
         fpr, tpr, _ = roc_curve(y_test, y_proba)
-        auc_score = roc_auc_score(y_test, y_proba)
 
         tuning_scores = {
         'accuracy' : accuracy_score(y_test, y_pred_best),
@@ -209,11 +274,13 @@ def ml_model(X_train,y_train, X_test, y_test,  input_model, tuning = False, scal
         'recall' : recall_score(y_test, y_pred_best),
         'precision' : precision_score(y_test, y_pred_best),
         'f1' : f1_score(y_test, y_pred_best),
-        'auc score' : auc_score,
+        'auc score' : roc_auc_score(y_test, y_proba),
+        'fpr':fpr,
+        'tpr':tpr,
         }
 
         # return acc_score, rec_score, prec_score, f_score, confusion_mat, best_model, best_params
-        return tuning_scores, best_model, best_params, best_score, fpr, tpr
+        return tuning_scores, best_model, best_params, best_score
 
     else:
         model.fit(X_train, y_train)
@@ -221,23 +288,67 @@ def ml_model(X_train,y_train, X_test, y_test,  input_model, tuning = False, scal
 
         return skf_scores
 
-#YAML file for parameter
-def save_param(model, params, path_file):
-    import yaml
-    # If file exists
-    if os.path.exists(path_file):
-        with open(path_file, 'r') as f:
-            all_params = yaml.load(f, Loader=yaml.FullLoader)
-    else:
-        all_params = {}
-    #update with new params
-    all_params[model] = params
-    #save it to file
-    with open(path_file, 'w') as f:
-        yaml.dump(all_params, f)
+
+#Plot confusion matrix
+def conf_mat(metric, model):
+    plt.figure(figsize=(4, 3))  # Adjust figure size as needed
+    sns.heatmap(
+        metric,
+        annot=True,
+        annot_kws={"size": 20},
+        fmt='d',
+        cmap='Blues',
+        xticklabels=(['Positive', 'Negative']),
+        yticklabels=['Positive', 'Negative'],
+        cbar=False
+
+    )
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.xlabel('Actual Values', fontsize=16)
+    plt.ylabel('Predicted Values', fontsize=16)
+    plt.title('Confusion Matrix', fontsize=16)
+    plt.tight_layout()
+    plt.tight_layout()
+    plt.savefig(f"plots/Confusion Matrix_{model}_tuning.png")
+
+# Model is tuned using training data and cross-validated on entire set
+def model_tuning_CV(exp,X,y,X_train, y_train, X_test, y_test, input_model, metrics, tuning_results,skf_results):
+
+    print(f"Tuning {input_model}")
+    result = {'Model': input_model}
+
+    # Hyperparameter tuning
+    tuning_scores, best_model, best_params, best_score, fpr, tpr = ml_model(X_train, y_train, X_test, y_test,
+                                                                            input_model, tuning=True)
+    joblib.dump(best_model, f"{input_model}_{exp}_tuned_model.pkl")
+    save_param(input_model, best_params, f"results/{input_model}_{exp}_bestparams.yml")
+    print(f"\nBest Hyperparameters from RandomizedSearchCV {exp.capitalize()} {input_model.capitalize()}:")
+    print(best_params)
+
+    # Hyperparameter Evaluation
+    print(f"\nBest Parameters Results {input_model} {exp.capitalize()}:")
+    result = report_metric(tuning_scores, metrics, result)
+
+    # Storing tuning scores
+    tuning_results.append(result)
+
+    # Plot confusion matrix
+    conf_mat(tuning_scores['confusion'], input_model)
+
+    # 10-fold Cross validation
+    skf_scores = strat_k_fold(X, y, best_model)
+    print(f"\n10-Fold Stratified Cross Validation Results {input_model} {exp.capitalize()}:")
+    # CV evaluation
+    result = report_metric(skf_scores, metrics, result)
+    # Storing skf scores
+    skf_results.append(result)
+
+    return tuning_results, skf_results,best_model
+
 
 # Shap plots - based on sample-wise predictions
-def shap_plot(model,X_train,X_test):
+def shap_plot(model,X_train,X_test,X):
     explainer = shap.Explainer(model, X_train)
     shap_values = explainer(X_test)
     print(f"\nSHAP Summary Plot ({model}):")
