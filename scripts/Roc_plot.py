@@ -1,6 +1,5 @@
 import os
 import joblib
-import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, cross_val_predict
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, f1_score, recall_score, classification_report,roc_curve,roc_auc_score
@@ -9,11 +8,6 @@ if __name__=='__main__':
     '''
     Using the cross validated model, Roc-Auc curve is predicted for 3 models - worst, mid, best
     '''
-    # Load data
-    path = r"D:\BI_prj\ML_biomarker\alzheimers_gene"
-    os.chdir(path.replace("\\", "/"))
-    os.makedirs('plots', exist_ok=True)
-    os.makedirs('results', exist_ok=True)
 
     data = joblib.load('data_clean.pkl')
     X = data['X']

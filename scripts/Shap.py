@@ -1,44 +1,10 @@
 import os
 import joblib
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.model_selection import train_test_split, cross_val_predict
-import shap
-
-# Shap plots - based on sample-wise predictions
-def shap_plot(model,X_train,X_test):
-    explainer = shap.Explainer(model, X_train)
-    shap_values = explainer(X_test)
-    print(f"\nSHAP Summary Plot ({model}):")
-    shap.summary_plot(shap_values, X_test, feature_names=X.columns, show=False)
-    plt.savefig(f"plots/shap_summmary.png")
-    plt.close()
-
-# Top features for model prediction
-def plot_top_features(model, feature_names, title, top_n):
-    if hasattr(model, 'coef_'):
-        coefs = model.coef_[0]
-        abs_coefs = np.abs(coefs)
-        top_idx = np.argsort(abs_coefs)[::-1][:top_n]
-        top_features = np.array(feature_names)[top_idx]
-        top_values = coefs[top_idx]
-        x_labels = 'Coefficient Values'
-    elif hasattr(model, 'feature_importances_'):
-        importances = model.feature_importances_
-        top_idx = np.argsort(importances)[::-1][:top_n]
-        top_features = np.array(feature_names)[top_idx]
-        top_values = importances[top_idx]
-        x_labels = "Feature Importances"
-
-    plt.figure(figsize=(8, 5))
-    sns.barplot(x=top_values, y=top_features, palette="viridis")
-    plt.title(f"Top {top_n} Features — {title}")
-    plt.xlabel(x_labels)
-    plt.ylabel("Feature")
-    plt.tight_layout()
-    plt.savefig(f"plots/top_features.png")
-    plt.show()
+from utilis import (
+shap_plot,
+plot_top_features
+)
 
 if __name__ == '__main__':
     '''
