@@ -1,6 +1,6 @@
 # Machine Learning For Biomarker Discovery for Alzheimer's Disease
 
-This repository contains a complete machine learning workflow for biomarker discovery, from raw gene expression data to identifying genes as potential biomarkers. The project demonstrates pre-processing, feature scaling, dimensionality reduction, hyperparameter tuning, cross-validation, and feature attribution (SHAP) using Python. The project was done as part of internship "ML for Biomarker Discovery" by NyBerMan Bioinformatics
+This repository contains a complete machine learning workflow for biomarker discovery, from raw gene expression data to identifying genes as potential biomarkers. The project demonstrates pre-processing, feature scaling, dimensionality reduction, hyperparameter tuning, cross-validation, and feature attribution (SHAP) using Python. 
 
 ---
 
@@ -10,6 +10,7 @@ The goal of this project is to identify potential biomarkers from gene expressio
 
 ![](ML_workflow.gif)
 
+**Clinical Relevance:** Top biomarkers (APP, APOE, PSEN1) align with known AD mechanisms involving amyloid processing and lipid metabolism, validating model's biological interpretability.
 ---
 
 ## Folder Structure
@@ -21,30 +22,54 @@ ML_alzheimer_gene_/
 └── README.md           # Project documentation
 ```
 ---
-## Introduction
-Alzheimer’s disease (AD) is a complex neurodegenerative disorder whose early detection remains a major challenge. With the growing availability of high-dimensional gene expression datasets, machine learning (ML) offers a way to uncover predictive biomarkers and model disease signatures that go beyond traditional single-gene analysis.
-The project applies ML techniques to differentiate Alzheimer's patients from controls by identify key genes, using supervised classification and feature attribution
-
 ## Data Overview
-The dataset contains 206 samples with 19,297 genes, label and batch. The target variable is 'label' which have classes 'control' and 'condition'. The class distribution was balanced and therefore did not need any pre-processing
+Samples: 206 (control vs. condition)
+Features: 19,297 genes (RNA-seq expression values)
 
 ## Data Pre-processing
-The 'batch' columns was dropped as it did not provide any relevant information. The target variable was label encoded to `Control -> 0` and `Condition -> 1` using the map function. The data was then train-test split to 80:20 ratio
+- Samples were balanced and did not need resampling
+<img src="plots/Label freq.png" width="200" height="225"/> 
+- Removed batch ID column (no batch effect detected)
+- Label encoding: Control → 0, Condition → 1
+- Train-test split: 80/20 stratified by class
 
-## PCA experiment
-A dimensionality reduction was performed in order to check its affect on model performance. PCA applied to retain >= 95% variance which was explained by 213 principal components.
-The PCA caused a drop in model accuracy, and therefore confirmed that the original features had better discriminative power. Thus, final analyses used raw data.
+# Methodology
+## Dimensionality Reduction: PCA vs. Raw Features
+Compared model performance with/without PCA (95% variance = 213 components)
 
-## Model Training
-Among all the models performance, three models which performed - worst, mid and best was chosen. These model were **Logistic Regression**, **Random Forest Classifier**, and **XGBoost Classifier**. Each model was trained with both PCA and non-PCA data, hyperparameter tuning performed via `RandomizedSearchCV` using training set and cross-validated using `10-fold Stratified cross-validation` using the entire dataset 
+| Experiment           | XGBoost Accuracy       | Random Forest         | Logistic Regression   | 
+|----------------------|------------------------|-----------------------|-----------------------|
+| Raw Features         | 96.55%                 |  93.10%               |  80.70%               |
+| PCA-performed        | 60.34%                 |  60.33%               |  46.62%               |
 
-## Model Evaluation
-Metric such as **Accuracy**, **Precision**, **Recall**, **F1-score** and **ROC-AUC** was evaluated for each model, with *Accuracy* given priority after hyperparameter tuning and cross-validation. There was 5-6% reduction in accuracy during cross-validation, which was expected and also indicates that the model didn't overfit the training data. 
-From these evaluation, the model with best performance was:
-> XGBoost, Accuracy = 94.43 ± 3.86%, ROC–AUC = 0.995 ± 0.0254
+<img src="plots/pca_exp.png" width="200" height="225"/> 
 
-## Feature Attribution
-Key genes involved in predictive power of samples were identified using **SHAP** (SHapley Additive exPlanations). The top contributing genes were *APP*, *APOE* and *PSEN1* which are AD biomarkers involved in amyloid pre-processing and lipid metabolism.
+- 36% reduced accuracy with PCA
+- Raw features preserve biological interpretations
+**Proceeded with raw features**
+
+## Model Selection & Optimization
+From different ML models, 3 models were selected based on accuracy - worst, mid and best
+**Model selected:** Logistic Regression, Random Forest, XGBoost
+**Optimisation:** RandomizedSearchCV with 5-fold CV (accuracy metric)
+**Final Evaluation (10-fold Stratified CV on entire dataset)*
+| Model                | Accuracy               | Precision             | F1 Score              | ROC-AUC               | 
+|----------------------|------------------------|-----------------------|-----------------------|-----------------------|
+| XGBoost              | 94.43 ± 3.86%          |  98.75 ± 3.75%        |  94.10 ± 4.13%        |  0.995 ± 0.025        |
+| Random Forest        | 89.53 ± 4.37%          |  93.13 ± 5.63%        |  88.64 ± 5.04%        |  0.974 ± 0.014        |
+| Logistic Regression  | 80.70 ± 6.88%          |  83.23 ± 5.72%        |  82.00 ± 6.47%        |  0.867 ± 0.068        |
+
+**Best Model:** XGBoost
+- Best accuracy and stability (lowest variance)
+- Compatible with SHAP for feature importance analysis
+<img src="plots/Confusion Matrix_xgboost_tuning.png" width="200" height="225"/> 
+
+## Biomarker Discovery: SHAP Feature Attribution
+SHAP (SHapley Additive exPlanations) reveals:
+- Individual gene contribution
+- Regulation of gene; upregulated or downregulated
+- Based on gene interaction where contribution are measured.
+<img src="plots/shap_summmary.png" width="500" height="525"/> 
 
 ## Conclusion
 The project concludes XGBoost as the most robust classifier for this dataset. While PCA helps in reducing the number of features involved, much of the information with important discriminative power is lost.
