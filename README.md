@@ -43,7 +43,7 @@ Compared model performance with/without PCA (95% variance = 213 components)
 | Raw Features         | 96.55%                 |  93.10%               |  80.70%               |
 | PCA-performed        | 60.34%                 |  60.33%               |  46.62%               |
 
-<img src="plots/pca_exp.png" width="200" height="225"/> 
+<img src="plots/pca_exp.png" width="500" height="525"/> 
 
 - 36% reduced accuracy with PCA
 - Raw features preserve biological interpretations
